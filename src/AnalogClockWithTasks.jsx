@@ -10,11 +10,7 @@ const AnalogClockWithTasks = () => {
 
     const {time, tasks} = useContext(TimeContext);
 
-    const [taskList, setTaskList] = useState(tasks);
 
-    useEffect(() => {
-        setTaskList(tasks); 
-    }, [tasks]);
 
     const hours = time.getHours();
     const minutes = time.getMinutes();
@@ -33,8 +29,8 @@ const AnalogClockWithTasks = () => {
     let centerX = 150;
     let centerY = 150;
 
-    let adjustedRadius = 138; // Limitar o raio para não ultrapassar o relógio
-    let innerRadius = adjustedRadius - 15; // Raio interno para criar o efeito de anel (donut)
+    let adjustedRadius = 115 + index*4; 
+    let innerRadius = adjustedRadius - 4; // Raio interno para criar o efeito de anel
 
     // Coordenadas de início e fim (arco externo)
     let startX = centerX + adjustedRadius * Math.cos(startRadians);
@@ -48,71 +44,76 @@ const AnalogClockWithTasks = () => {
     let endInnerX = centerX + innerRadius * Math.cos(endRadians);
     let endInnerY = centerY + innerRadius * Math.sin(endRadians);
 
-    if (endHour < startHour) {
-        let firstPartEndAngle = (24 / 24) * 360 - 90; // Fim do dia
-        let firstPartEndRadians = (firstPartEndAngle * Math.PI) / 180;
-        let firstPartEndX = centerX + adjustedRadius * Math.cos(firstPartEndRadians);
-        let firstPartEndY = centerY + adjustedRadius * Math.sin(firstPartEndRadians);
-        let firstPartEndInnerX = centerX + innerRadius * Math.cos(firstPartEndRadians);
-        let firstPartEndInnerY = centerY + innerRadius * Math.sin(firstPartEndRadians);
+      if (endHour < startHour) {
+          let firstPartEndAngle = 360 - 90; 
+          let firstPartEndRadians = (firstPartEndAngle * Math.PI) / 180;
+          let firstPartEndX = centerX + adjustedRadius * Math.cos(firstPartEndRadians);
+          let firstPartEndY = centerY + adjustedRadius * Math.sin(firstPartEndRadians);
+          let firstPartEndInnerX = centerX + innerRadius * Math.cos(firstPartEndRadians);
+          let firstPartEndInnerY = centerY + innerRadius * Math.sin(firstPartEndRadians);
 
-        arcs.push(
-            <path
-                key={`${index}-part1`}
-                d={`M ${startX} ${startY} 
-                   A ${adjustedRadius} ${adjustedRadius} 0 0 1 ${firstPartEndX} ${firstPartEndY} 
-                   L ${firstPartEndInnerX} ${firstPartEndInnerY} 
-                   A ${innerRadius} ${innerRadius} 0 0 0 ${startInnerX} ${startInnerY} 
-                   Z`}
-                fill={color}
-                opacity="0.6"
-                className={`task-arc-${index}`}
-                onMouseEnter={() => handleHover(index)}
-                onMouseLeave={() => handleLeave(index)}
-            />
-        );
+          const firstArcLargeArcFlag = (24 - startHour <= 12) ? 0 : 1;
 
-        let secondPartStartAngle = (0 / 24) * 360 - 90; // Começo do próximo dia
-        let secondPartStartRadians = (secondPartStartAngle * Math.PI) / 180;
-        let secondPartStartX = centerX + adjustedRadius * Math.cos(secondPartStartRadians);
-        let secondPartStartY = centerY + adjustedRadius * Math.sin(secondPartStartRadians);
-        let secondPartStartInnerX = centerX + innerRadius * Math.cos(secondPartStartRadians);
-        let secondPartStartInnerY = centerY + innerRadius * Math.sin(secondPartStartRadians);
+          arcs.push(
+              <path
+                  key={`${index}-part1`}
+                  d={`M ${startX} ${startY} 
+               A ${adjustedRadius} ${adjustedRadius} 0 ${firstArcLargeArcFlag} 1 ${firstPartEndX} ${firstPartEndY} 
+               L ${firstPartEndInnerX} ${firstPartEndInnerY} 
+               A ${innerRadius} ${innerRadius} 0 ${firstArcLargeArcFlag} 0 ${startInnerX} ${startInnerY} 
+               Z`}
+                  fill={color}
+                  opacity="0.6"
+                  className={`task-arc-${index}`}
+                  onMouseEnter={() => handleHover(index)}
+                  onMouseLeave={() => handleLeave(index)}
+              />
+          );
 
-        arcs.push(
-            <path
-                key={`${index}-part2`}
-                d={`M ${secondPartStartX} ${secondPartStartY} 
-                   A ${adjustedRadius} ${adjustedRadius} 0 0 1 ${endX} ${endY} 
-                   L ${endInnerX} ${endInnerY} 
-                   A ${innerRadius} ${innerRadius} 0 0 0 ${secondPartStartInnerX} ${secondPartStartInnerY} 
-                   Z`}
-                fill={color}
-                opacity="0.6"
-                className={`task-arc-${index}`}
-                onMouseEnter={() => handleHover(index)}
-                onMouseLeave={() => handleLeave(index)}
-            />
-        );
-    } else {
-        const largeArcFlag = endHour - startHour <= 12 ? 0 : 1;
+          let secondPartStartAngle = -90; 
+          let secondPartStartRadians = (secondPartStartAngle * Math.PI) / 180;
+          let secondPartStartX = centerX + adjustedRadius * Math.cos(secondPartStartRadians);
+          let secondPartStartY = centerY + adjustedRadius * Math.sin(secondPartStartRadians);
+          let secondPartStartInnerX = centerX + innerRadius * Math.cos(secondPartStartRadians);
+          let secondPartStartInnerY = centerY + innerRadius * Math.sin(secondPartStartRadians);
 
-        arcs.push(
-            <path
-                key={index}
-                d={`M ${startX} ${startY} 
-                   A ${adjustedRadius} ${adjustedRadius} 0 ${largeArcFlag} 1 ${endX} ${endY} 
-                   L ${endInnerX} ${endInnerY} 
-                   A ${innerRadius} ${innerRadius} 0 ${largeArcFlag} 0 ${startInnerX} ${startInnerY} 
-                   Z`}
-                fill={color}
-                opacity="0.6"
-                className={`task-arc-${index}`}
-                onMouseEnter={() => handleHover(index)}
-                onMouseLeave={() => handleLeave(index)}
-            />
-        );
-    }
+          const secondArcLargeArcFlag = endHour <= 12 ? 0 : 1;
+
+          arcs.push(
+              <path
+                  key={`${index}-part2`}
+                  d={`M ${secondPartStartX} ${secondPartStartY} 
+               A ${adjustedRadius} ${adjustedRadius} 0 ${secondArcLargeArcFlag} 1 ${endX} ${endY} 
+               L ${endInnerX} ${endInnerY} 
+               A ${innerRadius} ${innerRadius} 0 ${secondArcLargeArcFlag} 0 ${secondPartStartInnerX} ${secondPartStartInnerY} 
+               Z`}
+                  fill={color}
+                  opacity="0.6"
+                  className={`task-arc-${index}`}
+                  onMouseEnter={() => handleHover(index)}
+                  onMouseLeave={() => handleLeave(index)}
+              />
+          );
+      } else {
+          const largeArcFlag = (endHour - startHour) <= 12 ? 0 : 1;
+
+          arcs.push(
+              <path
+                  key={index}
+                  d={`M ${startX} ${startY} 
+               A ${adjustedRadius} ${adjustedRadius} 0 ${largeArcFlag} 1 ${endX} ${endY} 
+               L ${endInnerX} ${endInnerY} 
+               A ${innerRadius} ${innerRadius} 0 ${largeArcFlag} 0 ${startInnerX} ${startInnerY} 
+               Z`}
+                  fill={color}
+                  opacity="0.6"
+                  className={`task-arc-${index}`}
+                  onMouseEnter={() => handleHover(index)}
+                  onMouseLeave={() => handleLeave(index)}
+              />
+          );
+      }
+
 
     return arcs;
 };
@@ -131,7 +132,7 @@ const AnalogClockWithTasks = () => {
     return (
         <div style={{ position: 'relative' }} className="w-screen">
             <svg width="400" height="400" viewBox="0 0 300 300" className='w-full'>
-                <circle cx="150" cy="150" r="140" stroke="#292524" strokeWidth="5" fill="#FAFAFA" strokeLinecap="round" />
+                <circle cx="150" cy="150" r="140" stroke="#737373" strokeWidth="5" fill="#FAFAFA" strokeLinecap="round" />
 
                 {/* Marcadores de horas */}
                 {[...Array(24)].map((_, i) => {
@@ -230,7 +231,7 @@ const AnalogClockWithTasks = () => {
 
                 className='w-full'
             >
-                {taskList.map((task, index) =>
+                {tasks.map((task, index) =>
                     drawTaskArc(task.startHour, task.startMinute, task.endHour, task.endMinute, 135, task.color,  index)
                 )}
 
