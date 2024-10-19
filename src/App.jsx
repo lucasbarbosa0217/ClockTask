@@ -6,15 +6,14 @@ import ClockWithTasks from './AnalogClockWithTasks'
 import { TimeContext } from './TimeContext'
 
 function App() {
-  const { time, tasks, setTask} = useContext(TimeContext);
+  const { time, tasks, setTask, addTask} = useContext(TimeContext);
 
   useEffect(() => {
 
     setTimeout(() => {
-      console.log("teste")
-      setTask((taskList) => [...tasks, { label: 'Exercícior', startHour: 11, startMinute: 0, endHour: 10, endMinute: 15, color: '#ff0000' },
-      ])
-    }, 1000)
+      addTask({ label: 'Exercícior', startHour: 11, startMinute: 0, endHour: 10, endMinute: 15, color: '#ff0000' })
+   
+    }, 10)
   }, [])
 
 

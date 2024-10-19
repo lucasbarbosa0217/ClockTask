@@ -5,10 +5,8 @@ import './index.css'
 import { TimeProvider } from './TimeContext.jsx'
 
 createRoot(document.getElementById('root')).render(
-  <StrictMode>
     <TimeProvider>
       <App />
 
     </TimeProvider>
-  </StrictMode>,
 )
