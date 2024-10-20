@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { TimeContext } from './TimeContext';
+import { useIndexedDBContext } from './useIndexedDb';
 
 const hourToAngle = (hour, minute) => ((hour % 24) + minute / 60) * 15;
 
@@ -8,8 +9,9 @@ const minuteToAngle = (minute) => (minute / 60) * 360;
 const AnalogClockWithTasks = () => {
  
 
-    const {time, tasks} = useContext(TimeContext);
+    const {time} = useContext(TimeContext);
 
+    const {tasks} = useIndexedDBContext();
 
 
     const hours = time.getHours();
@@ -145,7 +147,7 @@ const AnalogClockWithTasks = () => {
     };
 
     return (
-        <div style={{ position: 'relative' }} className="w-screen">
+        <div style={{ position: 'relative' }} className="w-full">
             <svg width="400" height="400" viewBox="0 0 300 300" className='w-full'>
                 <circle cx="150" cy="150" r="140" stroke="#292524" strokeWidth="5" fill="#FAFAFA" strokeLinecap="round" />
                 <circle cx="150" cy="150" r="85" stroke="#292524" strokeWidth="5" fill="#FAFAFA" strokeLinecap="round" />
@@ -191,15 +193,7 @@ const AnalogClockWithTasks = () => {
                     );
                 })} 
 
-            
-
-            
-
-
-
-          
-            
-
+        
             </svg>
 
             <svg
@@ -210,7 +204,7 @@ const AnalogClockWithTasks = () => {
 
                 className='w-full'
             >
-                {tasks.map((task, index) =>
+                { tasks.map((task, index) =>
                     drawTaskArc(task.startHour, task.startMinute, task.endHour, task.endMinute, 135, task.color,  index, task.localizacao, task)
                 )}
 
