@@ -4,13 +4,21 @@ import App from './App.jsx'
 import './index.css'
 import { TimeProvider } from './TimeContext.jsx'
 import { IndexedDBProvider } from './useIndexedDb.jsx'
+import { Toaster } from "sonner"
+
 
 createRoot(document.getElementById('root')).render(
-  <IndexedDBProvider dbName="ClockTask" storeName="tasks">
-    <TimeProvider>
-      <App />
+  <>
+      <Toaster richColors position='top-right'></Toaster>
+    <IndexedDBProvider dbName="ClockTask" storeName="tasks">
 
-    </TimeProvider>
-  </IndexedDBProvider>
+      <TimeProvider>
+        <App />
+
+      </TimeProvider>
+    </IndexedDBProvider>
+
+  </>
+
 
 )

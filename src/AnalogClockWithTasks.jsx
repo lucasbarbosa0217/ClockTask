@@ -18,11 +18,20 @@ const AnalogClockWithTasks = () => {
     const minutes = time.getMinutes();
     const seconds = time.getSeconds();
 
+    const [taskArcs, setTaskArcs] = useState([]);
 
-  const drawTaskArc = (startHour, startMinute, endHour, endMinute, radius, color, index, localizacao, task) => {
+
+    useEffect(() => {
+        const arcs = tasks.map((task, index) =>
+            drawTaskArc(task.startHour, task.startMinute, task.endHour, task.endMinute, task.color, task.id, task.localizacao, task)
+        );
+        setTaskArcs(arcs);
+    }, [tasks])
+
+  const drawTaskArc = (startHour, startMinute, endHour, endMinute, color, index, localizacao, task) => {
     let arcs = [];
 
-
+    console.log(index)
 
     let startAngle = (startHour + startMinute / 60) / 24 * 360 - 90;
     let endAngle = (endHour + endMinute / 60) / 24 * 360 - 90;
@@ -36,13 +45,11 @@ const AnalogClockWithTasks = () => {
     let adjustedRadius = localizacao; 
     let innerRadius = adjustedRadius - 12.5; // Raio interno para criar o efeito de anel
 
-    // Coordenadas de início e fim (arco externo)
     let startX = centerX + adjustedRadius * Math.cos(startRadians);
     let startY = centerY + adjustedRadius * Math.sin(startRadians);
     let endX = centerX + adjustedRadius * Math.cos(endRadians);
     let endY = centerY + adjustedRadius * Math.sin(endRadians);
 
-    // Coordenadas de início e fim (arco interno)
     let startInnerX = centerX + innerRadius * Math.cos(startRadians);
     let startInnerY = centerY + innerRadius * Math.sin(startRadians);
     let endInnerX = centerX + innerRadius * Math.cos(endRadians);
@@ -124,14 +131,14 @@ const AnalogClockWithTasks = () => {
 
 
 
-    const [tooltip, setTooltip] = useState({ visible: false, text: '', position: { x: 0, y: 0 } });
+    const [tooltip, setTooltip] = useState({ visible: false, text: '', position: { x: 0, y: 0 }, task: {} });
 
     const handleHover = (e, index, task) => {
         document.querySelectorAll(`.task-arc-${index}`).forEach(element => element.style.opacity= "1");
 
 
-        const tooltipText = `${task.label} - ${formatTime(task.startHour, task.startMinute)} - ${formatTime(task.endHour, task.endMinute)}`;
-        setTooltip({ visible: true, text: tooltipText, position: { x: e.clientX, y: e.clientY } });
+        const tooltipText = `${formatTime(task.startHour, task.startMinute)} - ${formatTime(task.endHour, task.endMinute)}`;
+        setTooltip({ visible: true, text: tooltipText, position: { x: e.clientX, y: e.clientY }, task: task });
     };
 
     const handleLeave = (index, task) => {
@@ -146,11 +153,17 @@ const AnalogClockWithTasks = () => {
         return `${formattedHour}:${formattedMinute}`;
     };
 
+    const [clientXY , setClientXY] = useState([0,0]);
+
+    const client = (e) => {
+        setClientXY([e.clientX ,e.clientY])
+    }
+
     return (
-        <div style={{ position: 'relative' }} className="w-full">
+        <div style={{ position: 'relative' }} className="w-full" onMouseMove={client}>
             <svg width="400" height="400" viewBox="0 0 300 300" className='w-full'>
-                <circle cx="150" cy="150" r="140" stroke="#292524" strokeWidth="5" fill="#FAFAFA" strokeLinecap="round" />
-                <circle cx="150" cy="150" r="85" stroke="#292524" strokeWidth="5" fill="#FAFAFA" strokeLinecap="round" />
+                <circle cx="150" cy="150" r="140" stroke="#262626" strokeWidth="5" fill="#FAFAFA" strokeLinecap="round" />
+                <circle cx="150" cy="150" r="85" stroke="#262626" strokeWidth="5" fill="#FAFAFA" strokeLinecap="round" />
 
                 {/* Marcadores de horas */}
                 {[...Array(24)].map((_, i) => {
@@ -161,7 +174,7 @@ const AnalogClockWithTasks = () => {
                     const y2 = 150 + 77.5 * Math.sin(angle);
 
                     if(i %2 !== 0){
-                        return <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke="#737373" strokeWidth="0.4" strokeLinecap="round" />;
+                        return <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke="#262626" strokeWidth="1.5"  />;
 
                     }
                 })}
@@ -174,7 +187,7 @@ const AnalogClockWithTasks = () => {
                     const x2 = 150 + 137.5 * Math.cos(angle);
                     const y2 = 150 + 137.5 * Math.sin(angle);
 
-                    return <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke="#292524" strokeWidth="0.3" strokeLinecap="round" />;
+                    return <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke="#262626" strokeWidth="1"  />;
 
            
                 })}
@@ -187,13 +200,48 @@ const AnalogClockWithTasks = () => {
                     const number = i*2; 
 
                     return (
-                        <text key={i} x={x} y={y} textAnchor="middle" dominantBaseline="middle" fill="#292524" fontSize="10" fontWeight="bold">
+                        <text key={i} x={x} y={y} textAnchor="middle" dominantBaseline="middle" fill="#262626" fontSize="10" fontWeight="bold">
                             {number}
                         </text>
                     );
                 })} 
 
         
+            </svg>
+
+          
+
+            <svg
+                width="400"
+                height="400"
+                viewBox="0 0 300 300"
+                style={{ position: 'absolute', top: 0, left: 0 }}
+
+                className='w-full'
+            >
+
+                {
+                    <line
+                        x1={150 + 87.5 * Math.cos((hourToAngle(hours, minutes) - 90) * (Math.PI / 180))}
+                        y1={150 + 87.5 * Math.sin((hourToAngle(hours, minutes) - 90) * (Math.PI / 180))}
+                        x2={150 + 137.5 * Math.cos((hourToAngle(hours, minutes) - 90) * (Math.PI / 180))}
+                        y2={150 + 137.5 * Math.sin((hourToAngle(hours, minutes) - 90) * (Math.PI / 180))}
+                        stroke="#262626"
+                        strokeWidth="5"
+                    />
+                }
+
+                <text
+                    x="150"
+                    y="150"
+                    textAnchor="middle"
+                    dominantBaseline="middle"
+                    fill="#262626"
+                    fontSize="24"
+                    fontWeight="bold"
+                >
+                    {formatTime(hours, minutes)}
+                </text>
             </svg>
 
             <svg
@@ -204,32 +252,8 @@ const AnalogClockWithTasks = () => {
 
                 className='w-full'
             >
-                { tasks.map((task, index) =>
-                    drawTaskArc(task.startHour, task.startMinute, task.endHour, task.endMinute, 135, task.color,  index, task.localizacao, task)
-                )}
+                {taskArcs}
 
-                {
-                    <line
-                        x1={150 + 87.5 * Math.cos((hourToAngle(hours, minutes) - 90) * (Math.PI / 180))}
-                        y1={150 + 87.5 * Math.sin((hourToAngle(hours, minutes) - 90) * (Math.PI / 180))} 
-                        x2={150 + 137.5 * Math.cos((hourToAngle(hours, minutes) - 90) * (Math.PI / 180))} 
-                        y2={150 + 137.5 * Math.sin((hourToAngle(hours, minutes) - 90) * (Math.PI / 180))} 
-                        stroke="#292524" 
-                        strokeWidth="5" 
-                    />
-                }
-
-                <text
-                    x="150"
-                    y="150"
-                    textAnchor="middle"
-                    dominantBaseline="middle"
-                    fill="#292524"
-                    fontSize="24"
-                    fontWeight="bold"
-                >
-                    {formatTime(hours, minutes)}
-                </text>
 
             </svg>
 
@@ -237,15 +261,19 @@ const AnalogClockWithTasks = () => {
                 <div
                     style={{
                         position: 'absolute',
-                        top: tooltip.position.y,
-                        left: tooltip.position.x,
+                        top: clientXY[1] -40,
+                        left: clientXY[0]  +10,
                         backgroundColor: 'rgba(0, 0, 0, 0.7)',
                         color: 'white',
                         padding: '5px 10px',
                         borderRadius: '5px',
-                        pointerEvents: 'none',
+                        pointerEvents: "none"
                     }}
                 >
+                    <div className='flex items-center gap-2'>
+                        <div className={`w-[0.5rem] h-[2rem] rounded-full`} style={{ backgroundColor: tooltip.task.color }}></div>
+                        <span className='text-lg font-semibold'>{tooltip.task.label}</span>
+                    </div>
                     {tooltip.text}
                 </div>
             )}

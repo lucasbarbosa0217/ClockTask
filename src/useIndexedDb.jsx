@@ -33,7 +33,6 @@ export const IndexedDBProvider = ({ children, dbName, storeName }) => {
         const request = store.getAll();
 
         request.onsuccess = () => {
-            console.log(request.result)
             setTasks(request.result); 
         };
     };
@@ -51,6 +50,8 @@ export const IndexedDBProvider = ({ children, dbName, storeName }) => {
 
     const updateData = (id, updatedData) => {
         if (!db) return;
+        console.log("Updating data with id:", id); // Log the ID to check its value
+
         const transaction = db.transaction(storeName, 'readwrite');
         const store = transaction.objectStore(storeName);
         const getRequest = store.get(id);
